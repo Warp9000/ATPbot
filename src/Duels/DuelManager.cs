@@ -134,12 +134,13 @@ public class DuelManager
 
     private QuaverWebApi.v1.Structures.UserScore[] GetRecentUserScores(User user, Duel duel)
     {
+        var map = quaverWebApi.Endpoints.GetMap(duel.MapId).Result;
         List<QuaverWebApi.v1.Structures.UserScore> scores = new List<QuaverWebApi.v1.Structures.UserScore>();
         int page = 0;
         // get scores until the oldest score is older than the duel
         while (true)
         {
-            var newScores = quaverWebApi.Endpoints.GetUserScoresRecentAsync(user.QuaverId, GameMode.Keys4, 50, page).Result;
+            var newScores = quaverWebApi.Endpoints.GetUserScoresRecentAsync(user.QuaverId, map.GameMode, 50, page).Result;
             if (newScores.Length == 0)
                 break;
             if (newScores.Max(x => x.Time) < duel.AcceptedAt!.Value)

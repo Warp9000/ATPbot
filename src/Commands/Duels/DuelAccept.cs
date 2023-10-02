@@ -51,6 +51,6 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
 
         await RespondAsync(
             $"<@{challenger.DiscordId}>, your duel with <@{challengee.DiscordId}> has been accepted.\n" +
-            $"The map is: [{map.Artist} - {map.Title}](https://quavergame.com/mapset/map/{map.Id}); <t:{((DateTimeOffset)duel.EndAt!).ToUnixTimeSeconds()}:R>.");
+            $"The map is: [{map.Artist} - {map.Title} [{map.DifficultyName}]](https://quavergame.com/mapset/map/{map.Id}); <t:{((DateTimeOffset)duel.EndAt!).ToUnixTimeSeconds()}:R>.");
     }
 }
