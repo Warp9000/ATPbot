@@ -31,9 +31,6 @@ public static class DuelExtensions
 
     public static void SetRandomMap(this Duel duel, int[] mapIds, QuaverWebApi.Wrapper quaverWebApi)
     {
-        var mapsetId = mapIds[Random.Shared.Next(0, mapIds.Length)];
-        var mapset = quaverWebApi.Endpoints.GetMapset(mapsetId).Result;
-        var map = mapset.Maps[Random.Shared.Next(0, mapset.Maps.Length)];
-        duel.MapId = map.Id;
+        duel.MapId = mapIds[Random.Shared.Next(0, mapIds.Length)];
     }
 }

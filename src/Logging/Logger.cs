@@ -13,8 +13,11 @@ public class Logger
         MinimumSeverity = minimumSeverity;
         LogFile = logFile;
         CrashFile = crashFile;
+        if (logFile is not null)
+            logFileWriter = File.AppendText(logFile);
         if (crashFile is not null)
         {
+            crashFileWriter = File.AppendText(crashFile);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler((sender, args) =>
             {
                 if (args.ExceptionObject is not Exception exception) return;
@@ -48,9 +51,13 @@ public class Logger
     /// </summary>
     public Queue<LogMessage> MessageHistory { get; } = new(1024);
 
+    private StreamWriter? logFileWriter;
+    private StreamWriter? crashFileWriter;
+
     public void Log(LogMessage message)
     {
-        MessageHistory.Enqueue(message);
+        lock (MessageHistory)
+            MessageHistory.Enqueue(message);
 
         if (message.Severity < MinimumSeverity) return;
 
@@ -86,7 +93,7 @@ public class Logger
         var logMessage = new LogMessage(message.Message, message.Source, message.Severity.ToSeverity());
         if (message.Exception != null)
             logMessage.Message += $"\n{message.Exception}";
-            logMessage.Source = "Discord." + logMessage.Source;
+        logMessage.Source = "Discord." + logMessage.Source;
         Log(logMessage);
         return Task.CompletedTask;
     }
@@ -110,26 +117,31 @@ public class Logger
         Console.WriteLine(Format(message));
         Console.ResetColor();
 
-        if (LogFile is not null)
-            WriteToFile(message, LogFile);
+        if (logFileWriter is not null)
+            WriteToFile(message, logFileWriter);
 
     }
 
-    private void WriteToFile(LogMessage message, string file)
+    private void WriteToFile(LogMessage message, StreamWriter writer)
     {
-        var directory = Path.GetDirectoryName(file);
-        if (directory is not null && !Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
-            Directory.CreateDirectory(directory);
-        using var writer = File.AppendText(file);
-        writer.WriteLine(Format(message));
-        writer.Flush();
+        lock (writer)
+        {
+            var directory = Path.GetDirectoryName(LogFile);
+            if (directory is not null && !Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
+            writer.WriteLine(Format(message));
+            writer.Flush();
+        }
     }
 
     private void onUnhandledException(Exception exception)
     {
         Log(exception.ToString(), "Unhandled Exception", Severity.Error);
-        foreach (var message in MessageHistory)
-            WriteToFile(message, CrashFile!);
+        lock (MessageHistory)
+        {
+            foreach (var message in MessageHistory)
+                WriteToFile(message, crashFileWriter!);
+        }
     }
 
     public static string GetUniqueFileName(string prefix, string extension = "log", bool includeDate = true)

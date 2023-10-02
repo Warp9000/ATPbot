@@ -30,6 +30,11 @@ public class ATPbot
         Logger = new Logger(severity, Logger.GetUniqueFileName("logs/log"), Logger.GetUniqueFileName("logs/crash"));
         Logger.Log("Starting", this, Severity.Verbose);
 
+        AppDomain.CurrentDomain.FirstChanceException += (sender, args) =>
+        {
+            Logger.Log(args.Exception.ToString(), "CurrentDomain.FirstChanceException", Severity.Error);
+        };
+
         Client = new DiscordSocketClient(new DiscordSocketConfig
         {
             LogLevel = severity.ToDiscordSeverity(),

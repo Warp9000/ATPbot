@@ -15,12 +15,12 @@ public partial class Linking : InteractionModuleBase<SocketInteractionContext>
 
         if (linkedUser == null)
         {
-            await RespondAsync("You don't have a linked Quaver account.");
+            await RespondAsync("This user is not linked to a Quaver account.");
             return;
         }
 
         var quaverUser = (await _quaverWebApi.Endpoints.GetUsersAsync(linkedUser.QuaverId)).First();
 
-        await RespondAsync($"Your linked Quaver account is `{quaverUser.Username}` ({quaverUser.Id}).");
+        await RespondAsync($"This user is linked to the Quaver account `{quaverUser.Username}` ({quaverUser.Id}).");
     }
 }

@@ -34,9 +34,13 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        var duel = duelManager.CreateDuel(challenger, challengee, Context.Channel.Id);
+        var duel = duelManager.CreateDuel(challenger, challengee, Context.Channel.Id, true, filter);
 
         string msg = $"{user.Mention}, you have been challenged to a duel by {Context.User.Mention}!";
+
+        if (duel.Filter != null)
+            msg += $"\nFilter: {duel.Filter}";
+
         MessageComponent comp = new ComponentBuilder()
             .WithButton("Accept", $"{DUEL_ACCEPT}:{duel.Id}", ButtonStyle.Success)
             .WithButton("Decline", $"{DUEL_DECLINE}:{duel.Id}", ButtonStyle.Danger)

@@ -105,7 +105,7 @@ public class DuelManager
 
     public void EndDuel(Duel duel)
     {
-        ModIdentifier allowedMods = ModIdentifier.Mirror | ModIdentifier.NoFail;
+        ModIdentifier allowedMods = ModIdentifier.Mirror;
         var challengerScore = GetBestScore(duel.Challenger, allowedMods, duel);
         var challengeeScore = GetBestScore(duel.Challengee, allowedMods, duel);
 

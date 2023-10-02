@@ -24,7 +24,7 @@ public class MapFilter
     [FilterParam("--maxlength", "Seconds", "-xl")]
     public int? maxlength { get; set; }
 
-    [FilterParam("--minlns", "Integer 0-100% LNs", "-mlns")]
+    [FilterParam("--minlns", "Integer 0-100% LNs", "-mln")]
     public int? minlns { get; set; }
 
     [FilterParam("--maxlns", "Integer 0-100% LNs", "-xln")]
@@ -53,9 +53,9 @@ public class MapFilter
             return false;
         if (maxlength != null && map.Length / 1000 > maxlength)
             return false;
-        if (minlns != null && map.Length < minlns)
+        if (minlns != null && map.CountHitobjectLong / (float)(map.CountHitobjectNormal + map.CountHitobjectLong) * 100 < minlns)
             return false;
-        if (maxlns != null && map.Length > maxlns)
+        if (maxlns != null && map.CountHitobjectLong / (float)(map.CountHitobjectNormal + map.CountHitobjectLong) * 100 > maxlns)
             return false;
         return true;
     }
