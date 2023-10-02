@@ -15,11 +15,12 @@ public class Duel
     public int MapId { get; set; }
     public ulong ChannelId { get; set; }
     public bool Accepted { get; set; }
+    public string? Filter { get; set; }
 
     [JsonIgnore]
     public bool ToBeRemoved { get; set; }
 
-    public Duel(User challenger, User challengee, ulong channelId, bool waitForAccept = true)
+    public Duel(User challenger, User challengee, ulong channelId, bool waitForAccept = true, string? filter = null)
     {
         Id = Guid.NewGuid();
         Challenger = challenger;
@@ -29,5 +30,6 @@ public class Duel
         Accepted = !waitForAccept;
         if (Accepted)
             AcceptedAt = DateTime.UtcNow;
+        Filter = filter;
     }
 }

@@ -7,7 +7,7 @@ namespace ATPbot.Commands.Duels;
 public partial class Duels : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("challenge", "Challenge a user to a duel")]
-    public async Task Ping(IGuildUser user)
+    public async Task Ping(IGuildUser user, string? filter = null)
     {
         var challenger = userManager.GetUserWithDiscordId(Context.User.Id);
         if (challenger == null)

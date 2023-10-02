@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using Discord.Interactions;
 
-namespace ATPbot.Commands.Core;
+namespace ATPbot.Commands;
 
-public partial class Core : InteractionModuleBase<SocketInteractionContext>
+public partial class Common : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("ping", "pong")]
     public async Task Ping()

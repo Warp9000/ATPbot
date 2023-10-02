@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using ATPbot.Filtering;
 using ATPbot.Logging;
+using ATPbot.Maps;
 using ATPbot.Users;
 using Discord.WebSocket;
 using QuaverWebApi.v1.Structures.Enums;
@@ -15,6 +17,7 @@ public class DuelManager
     private Logger Logger { get; set; }
     private DiscordSocketClient Client { get; set; }
     private QuaverWebApi.Wrapper quaverWebApi { get; set; }
+    private MapsManager mapsManager { get; set; }
     private Timer Timer { get; set; }
 #if DEBUG
     private TimeSpan DuelTime { get; set; } = new TimeSpan(0, 15, 0);
@@ -24,11 +27,12 @@ public class DuelManager
 
     private List<Duel> Duels { get; set; }
 
-    public DuelManager(Logger logger, DiscordSocketClient client, QuaverWebApi.Wrapper quaverWebApi)
+    public DuelManager(Logger logger, DiscordSocketClient client, QuaverWebApi.Wrapper quaverWebApi, MapsManager mapsManager)
     {
         Logger = logger;
         Client = client;
         this.quaverWebApi = quaverWebApi;
+        this.mapsManager = mapsManager;
         Duels = DataManager.Get<List<Duel>>(this, "duels") ?? new List<Duel>();
 #if DEBUG
         Timer = new Timer(1000 * 15);
@@ -71,9 +75,9 @@ public class DuelManager
         Save();
     }
 
-    public Duel CreateDuel(User challenger, User challengee, ulong channelId, bool waitForAccept = true)
+    public Duel CreateDuel(User challenger, User challengee, ulong channelId, bool waitForAccept = true, string? filter = null)
     {
-        var duel = new Duel(challenger, challengee, channelId, waitForAccept);
+        var duel = new Duel(challenger, challengee, channelId, waitForAccept, filter);
         AddDuel(duel);
         return duel;
     }
@@ -86,8 +90,9 @@ public class DuelManager
         duelObj.Accepted = true;
         duelObj.AcceptedAt = DateTime.UtcNow;
         duelObj.EndAt = DateTime.UtcNow + DuelTime;
-        var mapsetIds = quaverWebApi.Endpoints.GetRankedMapsets().Result;
-        duelObj.SetRandomMap(mapsetIds, quaverWebApi);
+        int[] mapIds = Array.Empty<int>();
+        mapIds = FilterManager.GetMapsFromFilter(duelObj.Filter ?? "", mapsManager);
+        duelObj.SetRandomMap(mapIds, quaverWebApi);
         Save();
         return true;
     }

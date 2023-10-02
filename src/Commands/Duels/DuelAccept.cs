@@ -44,8 +44,6 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
         }
 
         duelManager.AcceptDuel(duel.Id);
-        // var mapsetIds = await quaverWebApi.Endpoints.GetRankedMapsets();
-        // duel.SetRandomMap(mapsetIds, quaverWebApi);
 
         var map = await quaverWebApi.Endpoints.GetMap(duel.MapId);
 
