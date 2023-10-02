@@ -1,70 +1,69 @@
 using System.Collections.Generic;
 using ATPbot.Logging;
 
-namespace ATPbot.Users
-{
+namespace ATPbot.Users;
+
     public class UserManager
+{
+    private Logger Logger { get; set; }
+
+    private List<User> Users { get; set; }
+
+    public UserManager(Logger logger)
     {
-        private Logger Logger { get; set; }
+        Logger = logger;
+        Users = DataManager.Get<List<User>>(this, "users") ?? new List<User>();
+    }
 
-        private List<User> Users { get; set; }
+    ~UserManager()
+    {
+        Save();
+    }
 
-        public UserManager(Logger logger)
+    private void Save()
+    {
+        DataManager.Set(this, "users", Users);
+    }
+
+    public User? GetUserWithDiscordId(ulong id)
+    {
+        foreach (User user in Users)
         {
-            Logger = logger;
-            Users = DataManager.Get<List<User>>(this, "users") ?? new List<User>();
-        }
-
-        ~UserManager()
-        {
-            Save();
-        }
-
-        private void Save()
-        {
-            DataManager.Set(this, "users", Users);
-        }
-
-        public User? GetUserWithDiscordId(ulong id)
-        {
-            foreach (User user in Users)
+            if (user.DiscordId == id)
             {
-                if (user.DiscordId == id)
-                {
-                    return user;
-                }
+                return user;
             }
-            return null;
         }
+        return null;
+    }
 
-        public User? GetUserWithQuaverId(int id)
+    public User? GetUserWithQuaverId(int id)
+    {
+        foreach (User user in Users)
         {
-            foreach (User user in Users)
+            if (user.QuaverId == id)
             {
-                if (user.QuaverId == id)
-                {
-                    return user;
-                }
+                return user;
             }
-            return null;
         }
+        return null;
+    }
 
-        public void AddUser(User user)
-        {
-            Users.Add(user);
-            Save();
-        }
+    public void AddUser(User user)
+    {
+        Users.Add(user);
+        Save();
+    }
 
-        public void CreateUser(ulong discordId, int quaverId)
-        {
-            var user = new User(discordId, quaverId);
-            AddUser(user);
-        }
+    public void CreateUser(ulong discordId, int quaverId)
+    {
+        var user = new User(discordId, quaverId);
+        AddUser(user);
+    }
 
-        public void RemoveUser(User user)
-        {
-            Users.Remove(user);
-            Save();
-        }
+    public void RemoveUser(User user)
+    {
+        Users.Remove(user);
+        Save();
     }
 }
