@@ -3,17 +3,16 @@ using System.Threading.Tasks;
 using ATPbot.Users;
 using Discord.Interactions;
 
-namespace ATPbot.Commands.Linking
-{
-    public partial class Core : InteractionModuleBase<SocketInteractionContext>
-    {
-        private readonly UserManager _userManager;
-        private readonly QuaverWebApi.Wrapper _quaverWebApi;
+namespace ATPbot.Commands.Linking;
 
-        public Core(QuaverWebApi.Wrapper quaverWebApi, UserManager userManager)
-        {
-            _quaverWebApi = quaverWebApi;
-            _userManager = userManager;
-        }
+public partial class Linking : InteractionModuleBase<SocketInteractionContext>
+{
+    private readonly UserManager _userManager;
+    private readonly QuaverWebApi.Wrapper _quaverWebApi;
+
+    public Linking(QuaverWebApi.Wrapper quaverWebApi, UserManager userManager)
+    {
+        _quaverWebApi = quaverWebApi;
+        _userManager = userManager;
     }
 }
