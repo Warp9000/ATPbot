@@ -28,7 +28,7 @@ namespace ATPbot.Commands.Duels
                 return;
             }
 
-            if (duelManager.HasDuel(challenger, challengee))
+            if (duelManager.HasDuel(challenger, challengee) || duelManager.HasDuel(challengee, challenger))
             {
                 await RespondAsync("You already have a duel with that user!");
                 return;

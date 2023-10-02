@@ -31,6 +31,12 @@ namespace ATPbot.Commands.Duels
                 return;
             }
 
+            if (duel.Challengee != challengee)
+            {
+                await RespondAsync("You are not the challengee of that duel!", ephemeral: true);
+                return;
+            }
+
             if (duel.Accepted)
             {
                 await RespondAsync("You have already accepted that duel!", ephemeral: true);
@@ -45,7 +51,7 @@ namespace ATPbot.Commands.Duels
 
             await RespondAsync(
                 $"<@{challenger.DiscordId}>, your duel with <@{challengee.DiscordId}> has been accepted.\n" +
-                $"The map is: [{map.Artist} - {map.Title}](https://quavergame.com/mapset/map/{map.Id}); <t:{duel.EndAt!.Value.Ticks}:R>");
+                $"The map is: [{map.Artist} - {map.Title}](https://quavergame.com/mapset/map/{map.Id}); <t:{((DateTimeOffset)duel.EndAt!).ToUnixTimeSeconds()}:R>.");
         }
     }
 }

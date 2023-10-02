@@ -30,6 +30,12 @@ namespace ATPbot.Commands.Duels
                 return;
             }
 
+            if (duel.Challengee != challengee)
+            {
+                await RespondAsync("You are not the challengee of that duel!", ephemeral: true);
+                return;
+            }
+
             if (duel.Accepted)
             {
                 await RespondAsync("You have already accepted that duel!", ephemeral: true);
