@@ -16,8 +16,11 @@ public class DuelManager
     private DiscordSocketClient Client { get; set; }
     private QuaverWebApi.Wrapper quaverWebApi { get; set; }
     private Timer Timer { get; set; }
-    // private TimeSpan MaxTime { get; set; } = new TimeSpan(3, 0, 0, 0);
+#if DEBUG
     private TimeSpan DuelTime { get; set; } = new TimeSpan(0, 15, 0);
+#else
+    private TimeSpan DuelTime { get; set; } = new TimeSpan(3, 0, 0, 0);
+#endif
 
     private List<Duel> Duels { get; set; }
 
@@ -27,8 +30,11 @@ public class DuelManager
         Client = client;
         this.quaverWebApi = quaverWebApi;
         Duels = DataManager.Get<List<Duel>>(this, "duels") ?? new List<Duel>();
-        // Timer = new Timer(1000 * 60);
+#if DEBUG
         Timer = new Timer(1000 * 15);
+#else
+        Timer = new Timer(1000 * 60);
+#endif
         Timer.Elapsed += ValidateDuels;
         Timer.Start();
     }
