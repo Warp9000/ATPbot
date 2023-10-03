@@ -1,0 +1,3 @@
+[submodule "QuaverWebApi"]
+	path = QuaverWebApi
+	url = https://github.com/warp9000/QuaverWebApi

@@ -13,8 +13,14 @@ public class Logger
         MinimumSeverity = minimumSeverity;
         LogFile = logFile;
         CrashFile = crashFile;
+
         if (logFile is not null)
+        {
+            var directory = Path.GetDirectoryName(LogFile);
+            if (directory is not null && !Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
             logFileWriter = File.AppendText(logFile);
+        }
         if (crashFile is not null)
         {
             crashFileWriter = File.AppendText(crashFile);
