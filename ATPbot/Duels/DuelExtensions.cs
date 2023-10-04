@@ -33,4 +33,9 @@ public static class DuelExtensions
     {
         duel.MapId = mapIds[Random.Shared.Next(0, mapIds.Length)];
     }
+
+    public static bool CanReroll(this Duel duel)
+    {
+        return duel.RerollCount < duel.MaxRerolls;
+    }
 }

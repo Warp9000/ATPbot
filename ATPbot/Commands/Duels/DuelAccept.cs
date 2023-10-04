@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ATPbot.Duels;
+using Discord;
 using Discord.Interactions;
 
 namespace ATPbot.Commands.Duels;
@@ -47,8 +49,14 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
 
         var map = await quaverWebApi.Endpoints.GetMap(duel.MapId);
 
+        MessageComponent comp = new ComponentBuilder()
+            .WithButton("Forfeit", $"{DUEL_FORFEIT}:{duel.Id}", ButtonStyle.Danger)
+            .WithButton("Reroll", $"{DUEL_REROLL}:{duel.Id}", ButtonStyle.Secondary, disabled: !duel.CanReroll())
+            .Build();
+
         await RespondAsync(
             $"<@{challenger.DiscordId}>, your duel with <@{challengee.DiscordId}> has been accepted.\n" +
-            $"The map is: [{map.Artist} - {map.Title} [{map.DifficultyName}]](https://quavergame.com/mapset/map/{map.Id}); <t:{((DateTimeOffset)duel.EndAt!).ToUnixTimeSeconds()}:R>.");
+            $"The map is: [{map.Artist} - {map.Title} [{map.DifficultyName}]](https://quavergame.com/mapset/map/{map.Id}); <t:{((DateTimeOffset)duel.EndAt!).ToUnixTimeSeconds()}:R>.",
+            components: comp);
     }
 }

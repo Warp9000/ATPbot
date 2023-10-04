@@ -10,9 +10,17 @@ namespace ATPbot.Filtering;
 
 public static class FilterManager
 {
-    public static bool Verify(string filter)
+    public static (bool success, string? errMessage) Verify(string filter)
     {
-        return false;
+        try
+        {
+            Parse(filter);
+            return (true, null);
+        }
+        catch (FilterParseException e)
+        {
+            return (false, e.Message);
+        }
     }
 
     public static int[] GetMapsFromFilter(string filter, MapsManager mapsManager)
@@ -38,7 +46,7 @@ public static class FilterManager
             var param = split[0];
             split.RemoveAt(0);
             if (!param.StartsWith('-'))
-                throw new Exception($"Invalid filter parameter: {param}");
+                throw new FilterParseException($"Invalid filter parameter: {param}");
             var value = split.TakeWhile(x => !x.StartsWith('-')).Aggregate((x, y) => $"{x} {y}");
             split.RemoveRange(0, split.TakeWhile(x => !x.StartsWith('-')).Count());
 
@@ -46,7 +54,7 @@ public static class FilterManager
                 && (((FilterParamAttribute)x.GetCustomAttributes(typeof(FilterParamAttribute), false)[0]).Aliases.Contains(param)
                     || ((FilterParamAttribute)x.GetCustomAttributes(typeof(FilterParamAttribute), false)[0]).FullName == param));
             if (prop == null)
-                throw new Exception($"Invalid filter parameter: {param}");
+                throw new FilterParseException($"Invalid filter parameter: {param}");
 
             var propType = prop.PropertyType;
             if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -63,7 +71,7 @@ public static class FilterManager
             else if (propType == typeof(GameMode))
                 prop.SetValue(mapsetFilter, Enum.Parse(typeof(GameMode), value));
             else
-                throw new Exception($"Invalid filter parameter: {param}");
+                throw new FilterParseException($"Invalid filter parameter: {param}");
         }
         return mapsetFilter;
     }

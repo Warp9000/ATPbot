@@ -25,6 +25,25 @@ public class DuelManager
     private TimeSpan DuelTime { get; set; } = new TimeSpan(3, 0, 0, 0);
 #endif
 
+    /// <summary>
+    /// {0} = winner<br/>
+    /// {1} = loser
+    /// </summary>
+    const string text_forfeit = "{0} forfeited the duel against {1}!";
+    /// <summary>
+    /// {0} = winner<br/>
+    /// {1} = loser<br/>
+    /// {2} = winner accuracy<br/>
+    /// {3} = loser accuracy
+    /// </summary>
+    const string text_won = "{0} won the duel against {1} with {2:0.00}% accuracy! ({2:0.00}% vs {3:0.00}%)";
+    /// <summary>
+    /// {0} = player 1<br/>
+    /// {1} = player 2<br/>
+    /// {2} = accuracy
+    /// </summary>
+    const string text_tied = "{0} and {1} tied with {2:0.00}% accuracy!";
+
     private List<Duel> Duels { get; set; }
 
     public DuelManager(Logger logger, DiscordSocketClient client, QuaverWebApi.Wrapper quaverWebApi, MapsManager mapsManager)
@@ -75,9 +94,9 @@ public class DuelManager
         Save();
     }
 
-    public Duel CreateDuel(User challenger, User challengee, ulong channelId, bool waitForAccept = true, string? filter = null)
+    public Duel CreateDuel(User challenger, User challengee, ulong channelId, bool waitForAccept = true, string? filter = null, int maxRerolls = 1)
     {
-        var duel = new Duel(challenger, challengee, channelId, waitForAccept, filter);
+        var duel = new Duel(challenger, challengee, channelId, waitForAccept, filter, maxRerolls);
         AddDuel(duel);
         return duel;
     }
@@ -90,17 +109,63 @@ public class DuelManager
         duelObj.Accepted = true;
         duelObj.AcceptedAt = DateTime.UtcNow;
         duelObj.EndAt = DateTime.UtcNow + DuelTime;
-        int[] mapIds = Array.Empty<int>();
-        mapIds = FilterManager.GetMapsFromFilter(duelObj.Filter ?? "", mapsManager);
+        var mapIds = FilterManager.GetMapsFromFilter(duelObj.Filter ?? "", mapsManager);
         duelObj.SetRandomMap(mapIds, quaverWebApi);
         Save();
         return true;
+    }
+
+    public bool RerollDuel(Guid duel)
+    {
+        var duelObj = Duels.Find(x => x.Id == duel);
+        if (duelObj == null)
+            return false;
+        if (duelObj.RerollCount >= duelObj.MaxRerolls)
+            return false;
+        duelObj.RerollCount++;
+        duelObj.ChallengerVoteReroll = false;
+        duelObj.ChallengeeVoteReroll = false;
+        var mapIds = FilterManager.GetMapsFromFilter(duelObj.Filter ?? "", mapsManager);
+        duelObj.SetRandomMap(mapIds, quaverWebApi);
+        Save();
+        return true;
+    }
+
+    public (bool voteSuccess, bool rerolled) VoteRerollDuel(Guid duel, User user)
+    {
+        var duelObj = Duels.Find(x => x.Id == duel);
+        if (duelObj == null)
+            return (false, false);
+
+        if (duelObj.RerollCount >= duelObj.MaxRerolls)
+            return (false, false);
+
+        if (duelObj.Challenger == user)
+            duelObj.ChallengerVoteReroll = true;
+        else if (duelObj.Challengee == user)
+            duelObj.ChallengeeVoteReroll = true;
+        else
+            return (false, false);
+
+        if (duelObj.ChallengerVoteReroll && duelObj.ChallengeeVoteReroll)
+            return (true, RerollDuel(duel));
+
+        Save();
+        return (true, false);
     }
 
     public void RemoveDuel(Duel duel)
     {
         Duels.Remove(duel);
         Save();
+    }
+
+    public void EndDuel(Guid duel)
+    {
+        var duelObj = Duels.Find(x => x.Id.Equals(duel));
+        if (duelObj == null)
+            return;
+        EndDuel(duelObj);
     }
 
     public void EndDuel(Duel duel)
@@ -119,17 +184,25 @@ public class DuelManager
         var challengeeUser = channel.GetUser(duel.Challengee.DiscordId);
 
         string msg = "";
-        if (challengerScore.Accuracy > challengeeScore.Accuracy)
+        if (duel.ChallengerForfeited)
         {
-            msg = $"{challengerUser.Mention} won the duel against {challengeeUser.Mention} with {challengerScore.Accuracy:0.00}% accuracy! ({challengerScore.Accuracy:0.00}% vs {challengeeScore.Accuracy:0.00}%)";
+            msg = string.Format(text_forfeit, challengerUser.Mention, challengeeUser.Mention);
+        }
+        else if (duel.ChallengeeForfeited)
+        {
+            msg = string.Format(text_forfeit, challengeeUser.Mention, challengerUser.Mention);
+        }
+        else if (challengerScore.Accuracy > challengeeScore.Accuracy)
+        {
+            msg = string.Format(text_won, challengerUser.Mention, challengeeUser.Mention, challengerScore.Accuracy, challengeeScore.Accuracy);
         }
         else if (challengerScore.Accuracy < challengeeScore.Accuracy)
         {
-            msg = $"{challengeeUser.Mention} won the duel against {challengerUser.Mention} with {challengeeScore.Accuracy:0.00}% accuracy! ({challengeeScore.Accuracy:0.00}% vs {challengerScore.Accuracy:0.00}%)";
+            msg = string.Format(text_won, challengeeUser.Mention, challengerUser.Mention, challengeeScore.Accuracy, challengerScore.Accuracy);
         }
         else
         {
-            msg = $"{challengerUser.Mention} and {challengeeUser.Mention} tied with {challengerScore.Accuracy:0.00}% accuracy!";
+            msg = string.Format(text_tied, challengerUser.Mention, challengeeUser.Mention, challengerScore.Accuracy);
         }
 
         channel.SendMessageAsync(msg);

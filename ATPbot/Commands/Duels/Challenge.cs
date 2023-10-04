@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using ATPbot.Filtering;
 using Discord;
 using Discord.Interactions;
 
@@ -7,7 +8,7 @@ namespace ATPbot.Commands.Duels;
 public partial class Duels : InteractionModuleBase<SocketInteractionContext>
 {
     [SlashCommand("challenge", "Challenge a user to a duel")]
-    public async Task Ping(IGuildUser user, string? filter = null)
+    public async Task Ping(IGuildUser user, string? filter = null, int maxRerolls = 1)
     {
         var challenger = userManager.GetUserWithDiscordId(Context.User.Id);
         if (challenger == null)
@@ -34,12 +35,27 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        var duel = duelManager.CreateDuel(challenger, challengee, Context.Channel.Id, true, filter);
+        if (filter != null)
+        {
+            var (success, errMessage) = FilterManager.Verify(filter);
+            if (!success)
+            {
+                await RespondAsync($"Failed to parse filter: {errMessage}");
+                return;
+            }
+        }
+
+        var duel = duelManager.CreateDuel(challenger, challengee, Context.Channel.Id, true, filter, maxRerolls);
 
         string msg = $"{user.Mention}, you have been challenged to a duel by {Context.User.Mention}!";
 
         if (duel.Filter != null)
-            msg += $"\nFilter: {duel.Filter}";
+        {
+            var possibleMaps = FilterManager.GetMapsFromFilter(duel.Filter, mapsManager);
+            msg += $"\nFilter: `{duel.Filter}` ({possibleMaps.Length} maps)";
+        }
+
+        msg += $"\nMax Rerolls: {duel.MaxRerolls}";
 
         MessageComponent comp = new ComponentBuilder()
             .WithButton("Accept", $"{DUEL_ACCEPT}:{duel.Id}", ButtonStyle.Success)

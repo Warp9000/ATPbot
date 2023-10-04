@@ -17,10 +17,18 @@ public class Duel
     public bool Accepted { get; set; }
     public string? Filter { get; set; }
 
+    public int RerollCount { get; set; }
+    public int MaxRerolls { get; set; }
+    public bool ChallengerVoteReroll { get; set; }
+    public bool ChallengeeVoteReroll { get; set; }
+
+    public bool ChallengerForfeited { get; set; }
+    public bool ChallengeeForfeited { get; set; }
+
     [JsonIgnore]
     public bool ToBeRemoved { get; set; }
 
-    public Duel(User challenger, User challengee, ulong channelId, bool waitForAccept = true, string? filter = null)
+    public Duel(User challenger, User challengee, ulong channelId, bool waitForAccept = true, string? filter = null, int maxRerolls = 1)
     {
         Id = Guid.NewGuid();
         Challenger = challenger;
@@ -31,5 +39,6 @@ public class Duel
         if (Accepted)
             AcceptedAt = DateTime.UtcNow;
         Filter = filter;
+        MaxRerolls = maxRerolls;
     }
 }
