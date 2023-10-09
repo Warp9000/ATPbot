@@ -14,7 +14,6 @@ public class Duel
     public DateTime? EndAt { get; set; }
     public int MapId { get; set; }
     public ulong ChannelId { get; set; }
-    public ulong MessageId { get; set; }
     public bool Accepted { get; set; }
     public string? Filter { get; set; }
 
@@ -25,6 +24,9 @@ public class Duel
 
     public bool ChallengerForfeited { get; set; }
     public bool ChallengeeForfeited { get; set; }
+
+    public bool ChallengerVoteEndEarly { get; set; }
+    public bool ChallengeeVoteEndEarly { get; set; }
 
     [JsonIgnore]
     public bool ToBeRemoved { get; set; }

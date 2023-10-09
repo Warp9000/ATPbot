@@ -27,7 +27,7 @@ public class ATPbot
         var severity = Severity.Info;
 #endif
 
-        Logger = new Logger(severity, Logger.GetUniqueFileName("logs/log"), Logger.GetUniqueFileName("logs/crash"));
+        Logger = new Logger(severity, Logger.GetUniqueFileName("logs/log"));
         Logger.Log("Starting", this, Severity.Verbose);
 
 #if DEBUG

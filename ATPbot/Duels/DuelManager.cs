@@ -18,6 +18,7 @@ public class DuelManager
     private DiscordSocketClient Client { get; set; }
     private QuaverWebApi.Wrapper quaverWebApi { get; set; }
     private MapsManager mapsManager { get; set; }
+    private UserManager userManager { get; set; }
     private Timer Timer { get; set; }
 #if DEBUG
     private TimeSpan DuelTime { get; set; } = new TimeSpan(0, 20, 0);
@@ -47,12 +48,13 @@ public class DuelManager
 
     public List<Duel> Duels { get; private set; }
 
-    public DuelManager(Logger logger, DiscordSocketClient client, QuaverWebApi.Wrapper quaverWebApi, MapsManager mapsManager)
+    public DuelManager(Logger logger, DiscordSocketClient client, QuaverWebApi.Wrapper quaverWebApi, MapsManager mapsManager, UserManager userManager)
     {
         Logger = logger;
         Client = client;
         this.quaverWebApi = quaverWebApi;
         this.mapsManager = mapsManager;
+        this.userManager = userManager;
         Duels = DataManager.Get<List<Duel>>(this, "duels") ?? new List<Duel>();
 #if DEBUG
         Timer = new Timer(1000 * 15);
@@ -158,6 +160,26 @@ public class DuelManager
         return (true, false);
     }
 
+    public (bool voteSuccess, bool Ended) VoteEndEarly(Guid duel, User user)
+    {
+        var duelObj = Duels.Find(x => x.Id == duel);
+        if (duelObj == null)
+            return (false, false);
+
+        if (duelObj.Challenger == user)
+            duelObj.ChallengerVoteEndEarly = true;
+        else if (duelObj.Challengee == user)
+            duelObj.ChallengeeVoteEndEarly = true;
+        else
+            return (false, false);
+
+        if (duelObj.ChallengerVoteEndEarly && duelObj.ChallengeeVoteEndEarly)
+            return (true, EndDuel(duelObj));
+
+        Save();
+        return (true, false);
+    }
+
     public void RemoveDuel(Duel duel)
     {
         Duels.Remove(duel);
@@ -187,26 +209,39 @@ public class DuelManager
         var challengerUser = channel.GetUser(duel.Challenger.DiscordId);
         var challengeeUser = channel.GetUser(duel.Challengee.DiscordId);
 
+        var challengerStats = userManager.GetStats(duel.Challenger);
+        var challengeeStats = userManager.GetStats(duel.Challengee);
+
         string msg = "";
         if (duel.ChallengerForfeited)
         {
             msg = string.Format(text_forfeit, challengerUser.Mention, challengeeUser.Mention);
+            challengerStats.Losses++;
+            challengeeStats.Wins++;
         }
         else if (duel.ChallengeeForfeited)
         {
             msg = string.Format(text_forfeit, challengeeUser.Mention, challengerUser.Mention);
+            challengeeStats.Losses++;
+            challengerStats.Wins++;
         }
         else if (challengerScore.Accuracy > challengeeScore.Accuracy)
         {
             msg = string.Format(text_won, challengerUser.Mention, challengeeUser.Mention, challengerScore.Accuracy, challengeeScore.Accuracy);
+            challengerStats.Wins++;
+            challengeeStats.Losses++;
         }
         else if (challengerScore.Accuracy < challengeeScore.Accuracy)
         {
             msg = string.Format(text_won, challengeeUser.Mention, challengerUser.Mention, challengeeScore.Accuracy, challengerScore.Accuracy);
+            challengeeStats.Wins++;
+            challengerStats.Losses++;
         }
         else
         {
             msg = string.Format(text_tied, challengerUser.Mention, challengeeUser.Mention, challengerScore.Accuracy);
+            challengerStats.Ties++;
+            challengeeStats.Ties++;
         }
 
         channel.SendMessageAsync(msg);

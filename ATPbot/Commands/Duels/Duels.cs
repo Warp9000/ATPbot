@@ -15,6 +15,7 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
     private const string DUEL_DECLINE = "duel_decline";
     private const string DUEL_FORFEIT = "duel_forfeit";
     private const string DUEL_REROLL = "duel_reroll";
+    private const string DUEL_END_EARLY = "duel_end_early";
     private readonly DuelManager duelManager;
     private readonly UserManager userManager;
     private readonly QuaverWebApi.Wrapper quaverWebApi;
@@ -26,24 +27,5 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
         this.userManager = userManager;
         this.quaverWebApi = quaverWebApi;
         this.mapsManager = mapsManager;
-    }
-
-    public async Task DisableOldButtons(Duel duel)
-    {
-        var oldMsg = await Context.Guild.GetTextChannel(duel.ChannelId).GetMessageAsync(duel.MessageId);
-        if (oldMsg != null)
-        {
-            var comps = oldMsg.Components;
-            var newComps = new ComponentBuilder();
-            foreach (var c in comps)
-            {
-                if (c is ButtonComponent button)
-                {
-                    var b = button.ToBuilder().WithDisabled(true);
-                    newComps.WithButton(b);
-                }
-            }
-            await ((SocketUserMessage)oldMsg).ModifyAsync(x => x.Components = newComps.Build());
-        }
     }
 }

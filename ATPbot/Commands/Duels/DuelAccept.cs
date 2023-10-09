@@ -60,6 +60,7 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
         MessageComponent comp = new ComponentBuilder()
             .WithButton("Forfeit", $"{DUEL_FORFEIT}:{duel.Id}", ButtonStyle.Danger)
             .WithButton("Reroll", $"{DUEL_REROLL}:{duel.Id}", ButtonStyle.Secondary, disabled: !duel.CanReroll())
+            .WithButton("Reroll", $"{DUEL_END_EARLY}:{duel.Id}", ButtonStyle.Secondary)
             .Build();
 
         var embedBuilder = Defaults.DefaultEmbedBuilder
@@ -68,11 +69,6 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
             .AddField("Map", $"[{map.Artist} - {map.Title} [{map.DifficultyName}]](https://quavergame.com/mapset/map/{map.Id})")
             .AddField("Ends", $"<t:{((DateTimeOffset)duel.EndAt!).ToUnixTimeSeconds()}:R>");
 
-        await DisableOldButtons(duel);
-
         await RespondAsync($"<@{challenger.DiscordId}>", embed: embedBuilder.Build(), components: comp);
-        
-        duel.ChannelId = Context.Channel.Id;
-        duel.MessageId = (await Context.Interaction.GetOriginalResponseAsync()).Id;
     }
 }

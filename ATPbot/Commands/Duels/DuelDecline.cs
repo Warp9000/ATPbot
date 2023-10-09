@@ -54,8 +54,6 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
             .WithTitle("Duel Declined")
             .WithDescription($"<@{challengee.DiscordId}> has declined your duel request.");
 
-        await DisableOldButtons(duel);
-
         await RespondAsync(embed: embedBuilder.Build());
     }
 }

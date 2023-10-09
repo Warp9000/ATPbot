@@ -57,8 +57,6 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
                 .WithTitle("Duel Rerolled")
                 .WithDescription($"The map is: [{map.Artist} - {map.Title} [{map.DifficultyName}]](https://quavergame.com/mapset/map/{map.Id})");
 
-            await DisableOldButtons(duel);
-
             await RespondAsync($"<@{duel.Challenger.DiscordId}> <@{duel.Challengee.DiscordId}>", embed: embedBuilder.Build(), components: comp);
         }
         else if (result.voteSuccess)

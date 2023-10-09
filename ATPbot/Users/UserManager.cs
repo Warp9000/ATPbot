@@ -3,16 +3,19 @@ using ATPbot.Logging;
 
 namespace ATPbot.Users;
 
-    public class UserManager
+public class UserManager
 {
     private Logger Logger { get; set; }
 
     private List<User> Users { get; set; }
 
+    private Dictionary<User, UserStats> Stats { get; set; }
+
     public UserManager(Logger logger)
     {
         Logger = logger;
         Users = DataManager.Get<List<User>>(this, "users") ?? new List<User>();
+        Stats = DataManager.Get<Dictionary<User, UserStats>>(this, "stats") ?? new Dictionary<User, UserStats>();
     }
 
     ~UserManager()
@@ -23,6 +26,7 @@ namespace ATPbot.Users;
     private void Save()
     {
         DataManager.Set(this, "users", Users);
+        DataManager.Set(this, "stats", Stats);
     }
 
     public User? GetUserWithDiscordId(ulong id)
@@ -64,6 +68,33 @@ namespace ATPbot.Users;
     public void RemoveUser(User user)
     {
         Users.Remove(user);
+        Save();
+    }
+
+    public UserStats GetStats(User user)
+    {
+        if (Stats.ContainsKey(user))
+        {
+            return Stats[user];
+        }
+        else
+        {
+            var stats = new UserStats();
+            Stats.Add(user, stats);
+            return stats;
+        }
+    }
+
+    public void SetStats(User user, UserStats stats)
+    {
+        if (Stats.ContainsKey(user))
+        {
+            Stats[user] = stats;
+        }
+        else
+        {
+            Stats.Add(user, stats);
+        }
         Save();
     }
 }

@@ -1,17 +1,19 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ATPbot.Duels;
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 
 namespace ATPbot.Commands.Duels;
 
 public partial class Duels : InteractionModuleBase<SocketInteractionContext>
 {
-    [ComponentInteraction($"{DUEL_FORFEIT}:*", true)]
-    public async Task DuelForfeit(string guid)
+    [ComponentInteraction($"{DUEL_END_EARLY}:*", true)]
+    public async Task DuelEndEarly(string guid)
     {
         var duel = duelManager.GetDuel(new Guid(guid));
         if (duel == null)
@@ -29,34 +31,32 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        if (duel.Challenger == curUser)
-        {
-            duel.ChallengerForfeited = true;
-        }
-        else if (duel.Challengee == curUser)
-        {
-            duel.ChallengeeForfeited = true;
-        }
-        else
+        if (duel.Challenger != curUser && duel.Challengee != curUser)
         {
             var embed = Defaults.WarningEmbed("You are not a part of that duel");
             await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
-        var success = duelManager.EndDuel(duel.Id);
+        var result = duelManager.VoteEndEarly(duel.Id, curUser);
 
-        if (!success)
+        if (result.Ended)
         {
-            var embed = Defaults.ErrorEmbed(new StackFrame());
+            var embed = Defaults.SuccessEmbed("Duel Ended Early", $"The duel has been ended early");
             await RespondAsync(embed: embed);
             return;
         }
-
-        var embedBuilder = Defaults.DefaultEmbedBuilder
-            .WithTitle("Duel Forfeited")
-            .WithDescription($"<@{curUser.DiscordId}> has forfeited the duel.");
-
-        await RespondAsync($"<@{duel.Challenger.DiscordId}>", embed: embedBuilder.Build());
+        else if (result.voteSuccess)
+        {
+            var embed = Defaults.SuccessEmbed("End Duel Early", $"<@{curUser.DiscordId}> has voted to end the duel early");
+            await RespondAsync(embed: embed);
+            return;
+        }
+        else
+        {
+            var embed = Defaults.WarningEmbed("You have already voted to end the duel early!");
+            await RespondAsync(embed: embed, ephemeral: true);
+            return;
+        }
     }
 }

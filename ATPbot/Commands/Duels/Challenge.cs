@@ -70,6 +70,6 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
             .WithButton("Decline", $"{DUEL_DECLINE}:{duel.Id}", ButtonStyle.Danger)
             .Build();
 
-        await RespondAsync(embed: embedBuilder.Build(), components: comp);
+        await RespondAsync(user.Mention, embed: embedBuilder.Build(), components: comp);
     }
 }

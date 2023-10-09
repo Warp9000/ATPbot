@@ -8,11 +8,10 @@ namespace ATPbot.Logging;
 
 public class Logger
 {
-    public Logger(Severity minimumSeverity = Severity.Info, string? logFile = null, string? crashFile = null)
+    public Logger(Severity minimumSeverity = Severity.Info, string? logFile = null)
     {
         MinimumSeverity = minimumSeverity;
         LogFile = logFile;
-        CrashFile = crashFile;
 
         if (logFile is not null)
         {
@@ -20,20 +19,6 @@ public class Logger
             if (directory is not null && !Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
                 Directory.CreateDirectory(directory);
             logFileWriter = File.AppendText(logFile);
-        }
-        if (crashFile is not null)
-        {
-            crashFileWriter = File.AppendText(crashFile);
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler((sender, args) =>
-            {
-                if (args.ExceptionObject is not Exception exception) return;
-                onUnhandledException(exception);
-            });
-            // handle exceptions in other threads
-            TaskScheduler.UnobservedTaskException += new EventHandler<UnobservedTaskExceptionEventArgs>((sender, args) =>
-            {
-                onUnhandledException(args.Exception);
-            });
         }
     }
 
@@ -48,17 +33,11 @@ public class Logger
     public string? LogFile { get; set; }
 
     /// <summary>
-    ///    The file to flush MessageHistory to on crash. If null, crash logging is disabled.
-    /// </summary>
-    public string? CrashFile { get; set; }
-
-    /// <summary>
     ///     A queue of the last 1024 log messages regardless of severity.
     /// </summary>
     public Queue<LogMessage> MessageHistory { get; } = new(1024);
 
     private StreamWriter? logFileWriter;
-    private StreamWriter? crashFileWriter;
 
     public void Log(LogMessage message)
     {
@@ -137,16 +116,6 @@ public class Logger
                 Directory.CreateDirectory(directory);
             writer.WriteLine(Format(message));
             writer.Flush();
-        }
-    }
-
-    private void onUnhandledException(Exception exception)
-    {
-        Log(exception.ToString(), "Unhandled Exception", Severity.Error);
-        lock (MessageHistory)
-        {
-            foreach (var message in MessageHistory)
-                WriteToFile(message, crashFileWriter!);
         }
     }
 

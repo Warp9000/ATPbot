@@ -21,9 +21,9 @@ public class CommandHandler
     private readonly IServiceProvider services;
 
     private readonly QuaverWebApi.Wrapper quaverWebApi;
-    private readonly DuelManager duelManager;
-    private readonly UserManager userManager;
     private readonly MapsManager mapsManager;
+    private readonly UserManager userManager;
+    private readonly DuelManager duelManager;
 
     public CommandHandler(DiscordSocketClient client, Logger logger)
     {
@@ -38,15 +38,15 @@ public class CommandHandler
 
         quaverWebApi = new QuaverWebApi.Wrapper();
         mapsManager = new MapsManager(quaverWebApi);
-        duelManager = new DuelManager(logger, client, quaverWebApi, mapsManager);
         userManager = new UserManager(logger);
+        duelManager = new DuelManager(logger, client, quaverWebApi, mapsManager, userManager);
 
         services = new ServiceCollection()
             .AddSingleton(Logger)
             .AddSingleton(quaverWebApi)
             .AddSingleton(mapsManager)
-            .AddSingleton(duelManager)
             .AddSingleton(userManager)
+            .AddSingleton(duelManager)
             .BuildServiceProvider();
     }
 

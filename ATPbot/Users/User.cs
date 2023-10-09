@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace ATPbot.Users;
 
@@ -13,6 +14,9 @@ public class User
         QuaverId = quaverId;
     }
 
+    /// <summary>
+    ///    Checks if two users are equal by IDs, not wins/losses
+    /// </summary>
     public override bool Equals(object? obj)
     {
         if (obj is User user)
@@ -23,6 +27,9 @@ public class User
         return false;
     }
 
+    /// <summary>
+    ///   Gets the hashcode of the user by Discord and Quaver IDs
+    /// </summary>
     public override int GetHashCode()
     {
         return HashCode.Combine(DiscordId, QuaverId);
