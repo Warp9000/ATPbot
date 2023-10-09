@@ -14,6 +14,7 @@ public class Duel
     public DateTime? EndAt { get; set; }
     public int MapId { get; set; }
     public ulong ChannelId { get; set; }
+    public ulong MessageId { get; set; }
     public bool Accepted { get; set; }
     public string? Filter { get; set; }
 

@@ -5,11 +5,23 @@ namespace ATPbot.Duels;
 
 public static class DuelExtensions
 {
-    public static bool IsExpired(this Duel duel)
+    public static bool HasEnded(this Duel duel)
     {
         if (duel.Accepted)
         {
             return duel.EndAt != null && duel.EndAt.Value < DateTime.UtcNow;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public static bool HasExpired(this Duel duel, TimeSpan expireTime)
+    {
+        if (!duel.Accepted)
+        {
+            return duel.CreatedAt + expireTime < DateTime.UtcNow;
         }
         else
         {

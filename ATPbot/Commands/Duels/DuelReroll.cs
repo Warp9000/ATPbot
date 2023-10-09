@@ -15,26 +15,30 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
         var duel = duelManager.GetDuel(new Guid(guid));
         if (duel == null)
         {
-            await RespondAsync("That duel does not exist!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("That duel does not exist!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         var curUser = userManager.GetUserWithDiscordId(Context.Interaction.User.Id);
         if (curUser == null)
         {
-            await RespondAsync("You must link your Quaver account first!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You must link your Quaver account first!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         if (duel.Challenger != curUser && duel.Challengee != curUser)
         {
-            await RespondAsync("You are not a part of that duel!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You are not a part of that duel");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         if (duel.RerollCount >= duel.MaxRerolls)
         {
-            await RespondAsync("You have already rerolled that duel!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You have already rerolled the duel the maximum amount of times!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
@@ -49,18 +53,25 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
                 .WithButton("Reroll", $"{DUEL_REROLL}:{duel.Id}", ButtonStyle.Secondary, disabled: !duel.CanReroll())
                 .Build();
 
-            await RespondAsync(
-                $"<@{duel.Challenger.DiscordId}> and <@{duel.Challengee.DiscordId}>, your duel has been rerolled!\n" +
-                $"The map is: [{map.Artist} - {map.Title} [{map.DifficultyName}]](https://quavergame.com/mapset/map/{map.Id}); <t:{((DateTimeOffset)duel.EndAt!).ToUnixTimeSeconds()}:R>.",
-                components: comp);
+            var embedBuilder = Defaults.DefaultEmbedBuilder
+                .WithTitle("Duel Rerolled")
+                .WithDescription($"The map is: [{map.Artist} - {map.Title} [{map.DifficultyName}]](https://quavergame.com/mapset/map/{map.Id})");
+
+            await DisableOldButtons(duel);
+
+            await RespondAsync($"<@{duel.Challenger.DiscordId}> <@{duel.Challengee.DiscordId}>", embed: embedBuilder.Build(), components: comp);
         }
         else if (result.voteSuccess)
         {
-            await RespondAsync("You have voted to reroll the duel!", ephemeral: true);
+            var embed = Defaults.SuccessEmbed("Reroll", $"<@{curUser.DiscordId}> has voted to reroll the duel!");
+            await RespondAsync(embed: embed);
+            return;
         }
         else
         {
-            await RespondAsync("You have already voted to reroll the duel!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You have already voted to reroll the duel!");
+            await RespondAsync(embed: embed, ephemeral: true);
+            return;
         }
     }
 }

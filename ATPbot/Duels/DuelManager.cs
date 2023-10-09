@@ -20,10 +20,11 @@ public class DuelManager
     private MapsManager mapsManager { get; set; }
     private Timer Timer { get; set; }
 #if DEBUG
-    private TimeSpan DuelTime { get; set; } = new TimeSpan(0, 15, 0);
+    private TimeSpan DuelTime { get; set; } = new TimeSpan(0, 20, 0);
 #else
     private TimeSpan DuelTime { get; set; } = new TimeSpan(3, 0, 0, 0);
 #endif
+    private TimeSpan ExpireTime { get; set; } = new TimeSpan(1, 0, 0);
 
     /// <summary>
     /// {0} = winner<br/>
@@ -44,7 +45,7 @@ public class DuelManager
     /// </summary>
     const string text_tied = "{0} and {1} tied with {2:0.00}% accuracy!";
 
-    private List<Duel> Duels { get; set; }
+    public List<Duel> Duels { get; private set; }
 
     public DuelManager(Logger logger, DiscordSocketClient client, QuaverWebApi.Wrapper quaverWebApi, MapsManager mapsManager)
     {
@@ -78,14 +79,17 @@ public class DuelManager
         foreach (var duel in Duels)
         {
             Logger.Log($"{duel.Challenger.QuaverId} vs {duel.Challengee.QuaverId}, accepted: {duel.Accepted}, time left: {duel.TimeLeft()}", this, Severity.Debug);
-            if (duel.IsExpired())
+            if (duel.HasEnded())
             {
                 EndDuel(duel);
             }
+            else if (duel.HasExpired(ExpireTime))
+            {
+                duel.ToBeRemoved = true;
+            }
         }
         int i = Duels.RemoveAll(x => x.ToBeRemoved);
-        if (i > 0)
-            Save();
+        Save();
     }
 
     private void AddDuel(Duel duel)
@@ -240,6 +244,7 @@ public class DuelManager
         return scores.OrderByDescending(x => x.Accuracy).FirstOrDefault();
     }
 
+
     public Duel? GetDuel(User challenger, User challengee)
     {
         foreach (var duel in Duels)
@@ -269,5 +274,19 @@ public class DuelManager
     public bool HasDuel(User challenger, User challengee)
     {
         return GetDuel(challenger, challengee) != null;
+    }
+
+    public Duel[] GetDuels(User user)
+    {
+        List<Duel> duels = new List<Duel>();
+        foreach (var duel in Duels)
+        {
+            if (duel.Challenger.Equals(user) || duel.Challengee.Equals(user))
+            {
+                duels.Add(duel);
+            }
+        }
+
+        return duels.ToArray();
     }
 }

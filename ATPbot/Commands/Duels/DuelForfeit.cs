@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ATPbot.Duels;
@@ -15,14 +16,16 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
         var duel = duelManager.GetDuel(new Guid(guid));
         if (duel == null)
         {
-            await RespondAsync("That duel does not exist!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("That duel does not exist!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         var curUser = userManager.GetUserWithDiscordId(Context.Interaction.User.Id);
         if (curUser == null)
         {
-            await RespondAsync("You must link your Quaver account first!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You must link your Quaver account first!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
@@ -36,7 +39,8 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
         }
         else
         {
-            await RespondAsync("You are not a part of that duel!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You are not a part of that duel");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
@@ -44,10 +48,17 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
 
         if (!success)
         {
-            await RespondAsync("Something went wrong!", ephemeral: true);
+            var embed = Defaults.ErrorEmbed(new StackFrame());
+            await RespondAsync(embed: embed);
             return;
         }
 
-        await RespondAsync("You have forfeited the duel!", ephemeral: true);
+        var embedBuilder = Defaults.DefaultEmbedBuilder
+            .WithTitle("Duel Forfeited")
+            .WithDescription($"<@{curUser.DiscordId}> has forfeited the duel.");
+
+        await DisableOldButtons(duel);
+
+        await RespondAsync($"<@{duel.Challenger.DiscordId}>", embed: embedBuilder.Build());
     }
 }

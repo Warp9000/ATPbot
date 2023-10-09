@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using ATPbot.Duels;
 using Discord.Interactions;
@@ -13,36 +14,48 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
         var duel = duelManager.GetDuel(new Guid(guid));
         if (duel == null)
         {
-            await RespondAsync("That duel does not exist!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("That duel does not exist!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         var challenger = duel.Challenger;
         if (challenger == null)
         {
-            await RespondAsync("You must link your Quaver account first!", ephemeral: true);
+            var embed = Defaults.ErrorEmbed(new StackFrame());
+            await RespondAsync(embed: embed);
             return;
         }
         var challengee = userManager.GetUserWithDiscordId(Context.Interaction.User.Id);
         if (challengee == null)
         {
-            await RespondAsync("That user has not linked their Quaver account!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You must link your Quaver account first!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         if (duel.Challengee != challengee)
         {
-            await RespondAsync("You are not the challengee of that duel!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You are not the challengee of that duel!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         if (duel.Accepted)
         {
-            await RespondAsync("You have already accepted that duel!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You have already accepted that duel!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         duelManager.RemoveDuel(duel);
-        await RespondAsync($"<@{challenger.DiscordId}>, your duel with <@{challengee.DiscordId}> has been declined.");
+
+        var embedBuilder = Defaults.DefaultEmbedBuilder
+            .WithTitle("Duel Declined")
+            .WithDescription($"<@{challengee.DiscordId}> has declined your duel request.");
+
+        await DisableOldButtons(duel);
+
+        await RespondAsync(embed: embedBuilder.Build());
     }
 }

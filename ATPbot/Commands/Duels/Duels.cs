@@ -1,7 +1,10 @@
+using System.Threading.Tasks;
 using ATPbot.Duels;
 using ATPbot.Maps;
 using ATPbot.Users;
+using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 
 namespace ATPbot.Commands.Duels;
 
@@ -23,5 +26,24 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
         this.userManager = userManager;
         this.quaverWebApi = quaverWebApi;
         this.mapsManager = mapsManager;
+    }
+
+    public async Task DisableOldButtons(Duel duel)
+    {
+        var oldMsg = await Context.Guild.GetTextChannel(duel.ChannelId).GetMessageAsync(duel.MessageId);
+        if (oldMsg != null)
+        {
+            var comps = oldMsg.Components;
+            var newComps = new ComponentBuilder();
+            foreach (var c in comps)
+            {
+                if (c is ButtonComponent button)
+                {
+                    var b = button.ToBuilder().WithDisabled(true);
+                    newComps.WithButton(b);
+                }
+            }
+            await ((SocketUserMessage)oldMsg).ModifyAsync(x => x.Components = newComps.Build());
+        }
     }
 }

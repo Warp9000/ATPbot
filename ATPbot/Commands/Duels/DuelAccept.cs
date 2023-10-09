@@ -1,10 +1,12 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ATPbot.Duels;
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 
 namespace ATPbot.Commands.Duels;
 
@@ -16,36 +18,42 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
         var duel = duelManager.GetDuel(new Guid(guid));
         if (duel == null)
         {
-            await RespondAsync("That duel does not exist!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("That duel does not exist!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         var challenger = duel.Challenger;
         if (challenger == null)
         {
-            await RespondAsync("You must link your Quaver account first!", ephemeral: true);
+            var embed = Defaults.ErrorEmbed(new StackFrame());
+            await RespondAsync(embed: embed);
             return;
         }
         var challengee = userManager.GetUserWithDiscordId(Context.Interaction.User.Id);
         if (challengee == null)
         {
-            await RespondAsync("That user has not linked their Quaver account!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You must link your Quaver account first!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         if (duel.Challengee != challengee)
         {
-            await RespondAsync("You are not the challengee of that duel!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You are not the challengee of that duel!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         if (duel.Accepted)
         {
-            await RespondAsync("You have already accepted that duel!", ephemeral: true);
+            var embed = Defaults.WarningEmbed("You have already accepted that duel!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
 
         duelManager.AcceptDuel(duel.Id);
+
 
         var map = await quaverWebApi.Endpoints.GetMap(duel.MapId);
 
@@ -54,9 +62,17 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
             .WithButton("Reroll", $"{DUEL_REROLL}:{duel.Id}", ButtonStyle.Secondary, disabled: !duel.CanReroll())
             .Build();
 
-        await RespondAsync(
-            $"<@{challenger.DiscordId}>, your duel with <@{challengee.DiscordId}> has been accepted.\n" +
-            $"The map is: [{map.Artist} - {map.Title} [{map.DifficultyName}]](https://quavergame.com/mapset/map/{map.Id}); <t:{((DateTimeOffset)duel.EndAt!).ToUnixTimeSeconds()}:R>.",
-            components: comp);
+        var embedBuilder = Defaults.DefaultEmbedBuilder
+            .WithTitle("Duel Challenge Accepted")
+            .WithDescription($"<@{challenger.DiscordId}>, your duel with <@{challengee.DiscordId}> has been accepted.")
+            .AddField("Map", $"[{map.Artist} - {map.Title} [{map.DifficultyName}]](https://quavergame.com/mapset/map/{map.Id})")
+            .AddField("Ends", $"<t:{((DateTimeOffset)duel.EndAt!).ToUnixTimeSeconds()}:R>");
+
+        await DisableOldButtons(duel);
+
+        await RespondAsync($"<@{challenger.DiscordId}>", embed: embedBuilder.Build(), components: comp);
+        
+        duel.ChannelId = Context.Channel.Id;
+        duel.MessageId = (await Context.Interaction.GetOriginalResponseAsync()).Id;
     }
 }
