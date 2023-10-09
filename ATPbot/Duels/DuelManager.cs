@@ -160,15 +160,15 @@ public class DuelManager
         Save();
     }
 
-    public void EndDuel(Guid duel)
+    public bool EndDuel(Guid duel)
     {
         var duelObj = Duels.Find(x => x.Id.Equals(duel));
         if (duelObj == null)
-            return;
-        EndDuel(duelObj);
+            return false;
+        return EndDuel(duelObj);
     }
 
-    public void EndDuel(Duel duel)
+    public bool EndDuel(Duel duel)
     {
         ModIdentifier allowedMods = ModIdentifier.Mirror;
         var challengerScore = GetBestScore(duel.Challenger, allowedMods, duel);
@@ -178,7 +178,7 @@ public class DuelManager
         if (channel == null)
         {
             Logger.Log("Could not find channel with id " + duel.ChannelId, this, Severity.Warning);
-            return;
+            return false;
         }
         var challengerUser = channel.GetUser(duel.Challenger.DiscordId);
         var challengeeUser = channel.GetUser(duel.Challengee.DiscordId);
@@ -208,6 +208,8 @@ public class DuelManager
         channel.SendMessageAsync(msg);
 
         duel.ToBeRemoved = true;
+
+        return true;
     }
 
     private QuaverWebApi.v1.Structures.UserScore[] GetRecentUserScores(User user, Duel duel)

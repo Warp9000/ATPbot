@@ -40,8 +40,14 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        await RespondAsync("You have forfeited the duel!", ephemeral: true);
+        var success = duelManager.EndDuel(duel.Id);
 
-        duelManager.EndDuel(duel.Id);
+        if (!success)
+        {
+            await RespondAsync("Something went wrong!", ephemeral: true);
+            return;
+        }
+
+        await RespondAsync("You have forfeited the duel!", ephemeral: true);
     }
 }
