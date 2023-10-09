@@ -51,6 +51,7 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
             MessageComponent comp = new ComponentBuilder()
                 .WithButton("Forfeit", $"{DUEL_FORFEIT}:{duel.Id}", ButtonStyle.Danger)
                 .WithButton("Reroll", $"{DUEL_REROLL}:{duel.Id}", ButtonStyle.Secondary, disabled: !duel.CanReroll())
+                .WithButton("End Early", $"{DUEL_END_EARLY}:{duel.Id}", ButtonStyle.Secondary)
                 .Build();
 
             var embedBuilder = Defaults.DefaultEmbedBuilder
