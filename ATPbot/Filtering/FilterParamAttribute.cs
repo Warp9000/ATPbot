@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace ATPbot.Maps;
+namespace ATPbot.Filtering;
 
 [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
 public sealed class FilterParamAttribute : Attribute

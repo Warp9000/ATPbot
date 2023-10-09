@@ -9,7 +9,8 @@ public static class DataManager
     public static T? Get<T>(object owner, string key, string folder = "")
     {
         folder = '/' + folder.TrimStart('/').TrimEnd('/') + '/';
-        string path = $"data/{owner.GetType().Name}{folder}{key}.json";
+        string ownerName = owner.GetType() == typeof(string) ? (string)owner : owner.GetType().Name;
+        string path = $"data/{ownerName}{folder}{key}.json";
         if (!File.Exists(path))
             return default;
         var json = File.ReadAllText(path);
@@ -27,7 +28,8 @@ public static class DataManager
     public static void Set<T>(object owner, string key, T value, string folder = "")
     {
         folder = '/' + folder.TrimStart('/').TrimEnd('/') + '/';
-        string path = $"data/{owner.GetType().Name}{folder}";
+        string ownerName = owner.GetType() == typeof(string) ? (string)owner : owner.GetType().Name;
+        string path = $"data/{ownerName}{folder}";
         Directory.CreateDirectory(path);
         var json = JsonConvert.SerializeObject(value);
         File.WriteAllText($"{path}/{key}.json", json);

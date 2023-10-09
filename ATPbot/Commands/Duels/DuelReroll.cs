@@ -62,8 +62,8 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
         }
         else if (result.voteSuccess)
         {
-            var embed = Defaults.SuccessEmbed("Reroll", $"<@{curUser.DiscordId}> has voted to reroll the duel!");
-            await RespondAsync(embed: embed);
+            var embed = Defaults.SuccessEmbed("Reroll", $"You have voted to reroll the duel!");
+            await RespondAsync(embed: embed, ephemeral: true);
             return;
         }
         else

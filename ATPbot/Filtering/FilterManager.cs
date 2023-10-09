@@ -10,6 +10,25 @@ namespace ATPbot.Filtering;
 
 public static class FilterManager
 {
+    public static List<string> Presets { get; private set; }
+
+    static FilterManager()
+    {
+        Presets = DataManager.Get<List<string>>("FilterManager", "presets") ?? new();
+    }
+
+    public static void AddPreset(string filter)
+    {
+        Presets.Add(filter);
+        DataManager.Set("FilterManager", "presets", Presets);
+    }
+
+    public static void RemovePreset(string filter)
+    {
+        Presets.Remove(filter);
+        DataManager.Set("FilterManager", "presets", Presets);
+    }
+
     public static (bool success, string? errMessage) Verify(string filter)
     {
         try
@@ -31,7 +50,6 @@ public static class FilterManager
         return maps.Select(x => x.Id).ToArray();
     }
 
-    // "-q query -md 123"
     private static MapFilter Parse(string filter)
     {
         var mapsetFilter = new MapFilter();

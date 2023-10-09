@@ -1,14 +1,15 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using ATPbot.Filtering;
 using ATPbot.Maps;
 using Discord.Interactions;
 
-namespace ATPbot.Commands;
+namespace ATPbot.Commands.Filters;
 
-public partial class Common : InteractionModuleBase<SocketInteractionContext>
+public partial class Filters : InteractionModuleBase<SocketInteractionContext>
 {
-    [SlashCommand("filterhelp", "Gets help with the map filter")]
+    [SlashCommand("help", "Gets help with the map filter")]
     public async Task FilterHelp()
     {
         var type = typeof(MapFilter);

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ATPbot.Filtering;
 using QuaverWebApi;
 using QuaverWebApi.v1.Structures;
 
@@ -28,9 +29,12 @@ public class MapsManager
     public void Save()
     {
         DataManager.Set(this, "mapsetIds", mapsetIds);
-        foreach (var map in maps)
+        lock (maps)
         {
-            DataManager.Set(this, map.Id.ToString(), map, "maps");
+            foreach (var map in maps)
+            {
+                DataManager.Set(this, map.Id.ToString(), map, "maps");
+            }
         }
     }
 

@@ -13,7 +13,7 @@ public static class Defaults
         .WithTimestamp(DateTime.UtcNow);
 
     public static Embed SuccessEmbed(string title, string message) => DefaultEmbedBuilder
-        .WithTitle("Success")
+        .WithTitle(title)
         .WithDescription(message)
         .WithColor(Color.Green)
         .Build();

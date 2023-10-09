@@ -244,6 +244,9 @@ public class DuelManager
             challengeeStats.Ties++;
         }
 
+        userManager.SetStats(duel.Challenger, challengerStats);
+        userManager.SetStats(duel.Challengee, challengeeStats);
+
         channel.SendMessageAsync(msg);
 
         duel.ToBeRemoved = true;

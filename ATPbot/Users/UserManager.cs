@@ -9,13 +9,13 @@ public class UserManager
 
     private List<User> Users { get; set; }
 
-    private Dictionary<User, UserStats> Stats { get; set; }
+    private Dictionary<int, UserStats> Stats { get; set; }
 
     public UserManager(Logger logger)
     {
         Logger = logger;
         Users = DataManager.Get<List<User>>(this, "users") ?? new List<User>();
-        Stats = DataManager.Get<Dictionary<User, UserStats>>(this, "stats") ?? new Dictionary<User, UserStats>();
+        Stats = DataManager.Get<Dictionary<int, UserStats>>(this, "stats") ?? new Dictionary<int, UserStats>();
     }
 
     ~UserManager()
@@ -73,27 +73,27 @@ public class UserManager
 
     public UserStats GetStats(User user)
     {
-        if (Stats.ContainsKey(user))
+        if (Stats.ContainsKey(user.QuaverId))
         {
-            return Stats[user];
+            return Stats[user.QuaverId];
         }
         else
         {
             var stats = new UserStats();
-            Stats.Add(user, stats);
+            Stats.Add(user.QuaverId, stats);
             return stats;
         }
     }
 
     public void SetStats(User user, UserStats stats)
     {
-        if (Stats.ContainsKey(user))
+        if (Stats.ContainsKey(user.QuaverId))
         {
-            Stats[user] = stats;
+            Stats[user.QuaverId] = stats;
         }
         else
         {
-            Stats.Add(user, stats);
+            Stats.Add(user.QuaverId, stats);
         }
         Save();
     }

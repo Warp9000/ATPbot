@@ -2,7 +2,7 @@ using System.Linq;
 using QuaverWebApi.v1.Structures;
 using QuaverWebApi.v1.Structures.Enums;
 
-namespace ATPbot.Maps;
+namespace ATPbot.Filtering;
 
 public class MapFilter
 {
