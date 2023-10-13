@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using ATPbot.Logging;
+using System.Threading.Tasks;
 
 namespace ATPbot;
 
@@ -36,6 +37,15 @@ public class ATPbot
             Logger.Log(args.Exception.ToString(), "CurrentDomain.FirstChanceException", Severity.Error);
         };
 #endif
+
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            Logger.Log(args.ExceptionObject.ToString()!, "CurrentDomain.UnhandledException", Severity.Error);
+        };
+        TaskScheduler.UnobservedTaskException += (sender, args) =>
+        {
+            Logger.Log(args.Exception.ToString(), "TaskScheduler.UnobservedTaskException", Severity.Error);
+        };
 
         Client = new DiscordSocketClient(new DiscordSocketConfig
         {
