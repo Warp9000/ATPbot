@@ -120,8 +120,8 @@ public class CommandHandler
                     await context.Interaction.RespondAsync("Invalid number or arguments");
                     break;
                 case InteractionCommandError.Exception:
-                    await context.Interaction.RespondAsync("An exception occured");
                     Logger.Log(result.ErrorReason, this, Severity.Error);
+                    await context.Interaction.RespondAsync("Exception: " + result.ErrorReason);
                     break;
                 case InteractionCommandError.Unsuccessful:
                     await context.Interaction.RespondAsync("Command could not be executed");
