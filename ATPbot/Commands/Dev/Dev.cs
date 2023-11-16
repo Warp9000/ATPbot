@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ATPbot.Duels;
@@ -70,6 +71,12 @@ public class Dev : InteractionModuleBase<SocketInteractionContext>
 
         var json = JsonConvert.SerializeObject(duels, Formatting.Indented);
 
-        await RespondAsync("```json\n" + json + "\n```");
+        Stream stream = new MemoryStream();
+        StreamWriter writer = new StreamWriter(stream);
+        writer.Write(json);
+        writer.Flush();
+        stream.Position = 0;
+
+        await RespondWithFileAsync(stream, "duels.json");
     }
 }
