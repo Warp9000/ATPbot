@@ -29,6 +29,7 @@ public partial class Maps : InteractionModuleBase<SocketInteractionContext>
             writer.Flush();
             stream.Position = 0;
             await RespondWithFileAsync(stream, "maps.txt");
+            return;
         }
 
         await RespondAsync(maps);
