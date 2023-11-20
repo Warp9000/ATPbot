@@ -37,7 +37,7 @@ public class MapFilter
             var querys = tags.Split(' ');
             foreach (var q in querys)
             {
-                if (!map.Tags.Split(',').Any(x => x.Contains(q)))
+                if (!map.Tags.Split(',').Any(x => x.ToLower().Contains(q.ToLower())))
                 {
                     return false;
                 }
