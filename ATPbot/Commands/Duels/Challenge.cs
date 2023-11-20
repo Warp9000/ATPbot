@@ -59,7 +59,7 @@ public partial class Duels : InteractionModuleBase<SocketInteractionContext>
 
         if (duel.Filter != null)
         {
-            var possibleMaps = FilterManager.GetMapsFromFilter(duel.Filter, mapsManager);
+            var possibleMaps = FilterManager.GetMapIdsFromFilter(duel.Filter, mapsManager);
             embedBuilder.AddField("Filter", $"`{duel.Filter}` ({possibleMaps.Length} maps)");
         }
 

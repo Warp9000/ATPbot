@@ -115,7 +115,7 @@ public class DuelManager
         duelObj.Accepted = true;
         duelObj.AcceptedAt = DateTime.UtcNow;
         duelObj.EndAt = DateTime.UtcNow + DuelTime;
-        var mapIds = FilterManager.GetMapsFromFilter(duelObj.Filter ?? "", mapsManager);
+        var mapIds = FilterManager.GetMapIdsFromFilter(duelObj.Filter ?? "", mapsManager);
         duelObj.SetRandomMap(mapIds, quaverWebApi);
         Save();
         return true;
@@ -131,7 +131,7 @@ public class DuelManager
         duelObj.RerollCount++;
         duelObj.ChallengerVoteReroll = false;
         duelObj.ChallengeeVoteReroll = false;
-        var mapIds = FilterManager.GetMapsFromFilter(duelObj.Filter ?? "", mapsManager);
+        var mapIds = FilterManager.GetMapIdsFromFilter(duelObj.Filter ?? "", mapsManager);
         duelObj.SetRandomMap(mapIds, quaverWebApi);
         Save();
         return true;

@@ -4,6 +4,7 @@ using System.Linq;
 using ATPbot.Maps;
 using Discord;
 using QuaverWebApi;
+using QuaverWebApi.v1.Structures;
 using QuaverWebApi.v1.Structures.Enums;
 
 namespace ATPbot.Filtering;
@@ -42,12 +43,19 @@ public static class FilterManager
         }
     }
 
-    public static int[] GetMapsFromFilter(string filter, MapsManager mapsManager)
+    public static int[] GetMapIdsFromFilter(string filter, MapsManager mapsManager)
     {
         var parsed = Parse(filter);
         mapsManager.Update();
         var maps = mapsManager.GetMaps(parsed);
         return maps.Select(x => x.Id).ToArray();
+    }
+
+    public static Map[] GetMapsFromFilter(string filter, MapsManager mapsManager)
+    {
+        var parsed = Parse(filter);
+        mapsManager.Update();
+        return mapsManager.GetMaps(parsed);
     }
 
     private static MapFilter Parse(string filter)

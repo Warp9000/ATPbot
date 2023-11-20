@@ -10,7 +10,7 @@ public partial class Maps : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("rngmap", "gets a random map with a filter")]
     public async Task RngMap(string filter = "")
     {
-        var mapIds = FilterManager.GetMapsFromFilter(filter, mapsManager);
+        var mapIds = FilterManager.GetMapIdsFromFilter(filter, mapsManager);
         if (mapIds.Length == 0)
         {
             await RespondAsync("No maps found with that filter");
